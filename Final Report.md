@@ -30,12 +30,12 @@ Our idea can be basically divided into 2 steps. Details about each step can be f
 The problem with the first model is that it assumes that every positive or negative word has the same weight. This is obviously not true. For example, "crash" has a stronger sentiment comparing to "drop". Therefore, in this model, we will assign weights to different words.
 
 We use a method put forward by Jagadeesh and Wu(2013) to generate weights of words. The intuition behind this is we assign weights for each word according to the market reaction to each headline that contains those words. Mathematically, the idear can be expressed as follows:  
-Sentiment_i= \Sigma_{j=1}^J(w_jF_{i,j}\frac{1}{a_i})  
+![Formula1](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/Formula_1.png) 
 where J is the total number of positive and negative words in our lexicon,$w_j$ is the weight of word j,$F_{i,j}$ is the number of occurences of word i in headline i, and $a_i$ is the total number of words in headline i. The only unknown of the above equation is $w_j$ and we can estimate $w_j$ using the following regression model:
-$$r_i=a+b \Sigma_{j=1}^J(w_jF_{i,j})\frac{1}{a_i}+\epsilon_i$$  
+![Formula2](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/Formula_2.png)  
 
 Since b is a constant, we combine b and $w_j$ together and write it as $B_j$ gives us the regression model:
-$$r_i=a+\Sigma_{j=1}^J(B_jF_{i,j})\frac{1}{a_i}+\epsilon_i$$
+![Formula3](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/Formula_3.png)
 
 where $r_i$ is the abnormal return of stock market caused by headline i. After getting $B_j$, we can get $w_j$ using standardization.
 
