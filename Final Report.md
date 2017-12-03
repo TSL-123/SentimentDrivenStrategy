@@ -53,8 +53,7 @@ Our data are news titles from 2007 to 2017, consisting of over 4 million records
 
 We also tried to get an overlook on the news data. Our cleaned data shows clear pattern that most news have sentiment factor close to 0. Rest have significant positive or negative sentiment factor.
 
-![alt text](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/trend_plot.png "Logo Title Text 1")
-
+![Trend](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/trend_plot.png)
 
 ### 2) Company Matching
 
