@@ -1,0 +1,31 @@
+data work.test;
+	set sentpro.aggregateddatawithticker;
+	format sasdate yymmddn8.;
+	format Time Time8.;
+	informat sasdate yymmddn8.;
+	informat Time Time8.;
+run;
+
+%macro seperate1;
+%do j=2011 %to 2017;
+	%do i=1 %to 9;
+		data SENTPRO.TickerData&j.0&i.;
+			set work.test;
+			if year(sasdate) = &j. and month(sasdate) = &i.;
+	%end;
+%end;
+run;
+%mend;
+%seperate1;
+
+%macro seperate2;
+%do j=2011 %to 2017;
+	%do i=10 %to 12;
+		data SENTPRO.TickerData&j.&i.;
+			set work.test;
+			if year(sasdate) = &j. and month(sasdate) = &i.;
+	%end;
+%end;
+run;
+%mend;
+%seperate2;
