@@ -181,7 +181,7 @@ By cross validating different alphas based on the profits, we find that Ridge wi
 ![pic13](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/13.png)  
 Indeed, Ridge improves our result to 787%, which is what we have expected. However, the Lasso does no perform well. We think this is mainly because Lasso tends to produce sparse solutions. Sparsity means the sentiment of the news is based on fewer words because a lot of words have weights 0 assigned to them under Lasso. Therefore, it will increase the chances of making mistakes. 
 
-## Feasibility of this trading strategy  
+## 7.Feasibility of this trading strategy  
 Of course, we are not likely to get the 500% result in reality. But given the high magnitude of our return, we are still expected to generate a substantial amount of profits in reality. We will address some of your concerns first and discuss some of the drawbacks of our model.
 1.	Bid-ask spreads  
 We are using the ACTUAL transaction prices from TAQ database. We believe this is a good estimation of our cost and returns. If you are concerned about the bid-ask spread, simply trade those companies with both high volumes and high market capital. For those companies, the bid-ask spread impact could be lower.  
@@ -192,23 +192,21 @@ Notice that we only trades companies with market capital more than 2 billion dol
 4.	Competitions  
 Yes, we will face competitions from Citadel and Renaissance Tech. But the interesting thing is that, if we adjust our holding period from 5 minutes to 1 minute, our returns become worse. Why? Because we need to wait for human traders to bid up the price. Again, we are trading large companies. In US stock market, the majority of the investors are still traditional investors. Even a small amount of quant investors like Citadel can place orders faster than us, they cannot lift the price a lot for big companies. Even if they can, they will usually not do it because institutional investors won’t want to put too many risks on a single trade.   
 
+Despite the great result, there are also some drawbacks of our model:
+1.	We implicitly assume that we can trade fractions of shares.
+2.	The volatility is high. We are assuming that we put all of our money into a single hedge trade, wait for 5 minutes, and get out. Evidently this will cause a lot of volatilities. 
+3.	We do not consider the case of margin call. In the case of shorting, we might be forced to close our positions.
 
 
+## 8.Future Works  
+As we have discussed in the mid-term report, we want to explore the following topics:  
+•	Can we generate lexicon of our own?  
+•	Can we improve our result by using bi gram?  
+•	Can we use Google N-Gram to speed up the process of generating sentiment scores?  
+•	Can we optimize our portfolio by introducing more assets like bonds into consideration?  
+•	Can we design some different trading strategies like volatility trading strat  
 
 
-
-
-
-
-Our data are news titles from 2007 to 2017, consisting of over 4 million records. So data cleaning and text processing are extremely important. Ideal format of our data are split words, so we can directly match them with directionary or compare them with each other. To cusomize the data, we delete meaningless symbol like "/","(" and fixed match with such symbols like "'s". Aside from meaningless symbol, we have emotionless words in the sentence. Suppose we have too many words like "of", "and" in a sentence. The method described in earlier chapter will be tarnished. By importing nltk package, we  delete common stop words from our data and get a clean dataset ready for analysis.
-
-We also tried to get an overlook on the news data. Our cleaned data shows clear pattern that most news have sentiment factor close to 0. Rest have significant positive or negative sentiment factor.
-
-![Trend](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/trend_plot.png)
-
-### 2) Company Matching
-
-### 3) Strategy Construction
-
-## 7. Conclusion
-
+## 9.References 
+[1] Jegadeesh, Narasimhan, and Di Wu. "Word power: A new approach for content analysis." Journal of Financial Economics 110.3 (2013): 712-729.  
+[2] Treynor, Jack, and Kay Mazuy. "Can mutual funds outguess the market." Harvard business review 44.4 (1966): 131-136.  
