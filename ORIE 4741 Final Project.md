@@ -52,14 +52,16 @@ The raw news data were too messy for Natural Language Processing. Therefore, we 
 •	Converted all words into lower case.  
 •	Deleted words that are not English. Some of the news in Thompson Reuters were in Japanese and Chinese. And we deleted them using utf-8 encode and ASCII decode.   
 
+### 3) Build Features
+To build our features, we used a famous financial dictionary created by Loughran and McDonald. The reason we use this dictionary is that the sentiments of words in financial news can be quite different from our usual language. For example, “liability” may have a negative sentiment in our normal conversation, but in finance it is just a concept in financial report with no particular sentiment. Loughran and McDonald created this list of positive and negative words using 10-K and 10-Q reports from SEC and it has been widely used by the industry. This gives us 2337 negative words and 353 positive words. Therefore, the total number of features we use is 2690.
 
 
-
-### 1) Step 1 Sentiment Analysis
-The problem with the first model is that it assumes that every positive or negative word has the same weight. This is obviously not true. For example, "crash" has a stronger sentiment comparing to "drop". Therefore, in this model, we will assign weights to different words.
+### 4) Our Model
+Given a sentence of news headlines, we tokenized the headlines into single word and matched each word in the sentence with the Loughran and McDonald dictionary. 
 
 We use a method put forward by Jagadeesh and Wu(2013) to generate weights of words. The intuition behind this is we assign weights for each word according to the market reaction to each headline that contains those words. Mathematically, the idear can be expressed as follows:    
-![Formula1](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/Formula_1.png)   
+![Formula1](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/Formula_1.png)     
+
 where J is the total number of positive and negative words in our lexicon,wj is the weight of word j,Fi,j is the number of occurences of word i in headline i, and ai is the total number of words in headline i. The only unknown of the above equation is wj and we can estimate wj using the following regression model:  
 ![Formula2](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/Formula_2.png)     
 
@@ -70,11 +72,19 @@ where ri is the abnormal return of stock market caused by headline i. After gett
 
 Why do we choose regression instead of classification? We have 10 years news data. It is impossible for us to tag them manually as 'positive' or 'negative'. Therefore, we have to tag them with returns. But if we only tag them as positve or negative according to returns, we fail to capture the magnitude of returns. Therefore, we choose to use multivariate regression to capture this magnitude.
 
-### 2) Step 2 Ticker Matching
- So how do we trade the particular stocks that are mentioned in the news? The answer is a fuzzy match algorithm. We have collected all the company names from NYSE, NASDAQ, AMEX from NASDAQ and we make a Python dictionary with kays equal to the company names and values equal to its symbol. The problem here is that companies may not be mentioned in its full names in the news. For example, Apple Inc. may be called Apple in the news. That is why we need a fuzzy match algorithm here. (to be continued,,,)
+### 5) Identify company names in news
+The importance of trading the correct companies mentioned in the news is evident. And we design an algorithm to identify company names in news.
+ 1.Data Cleaning:
+ For company names data, we downloaded a list of all tradable companies in NYSE, NASDAQ and AMEX. And we did the following data cleaning procedures:
+•	Convert all words into lower case.  
+•	Delete punctuations.  
+•	Delete words like ‘inc’, ‘corporation’, ‘corp’. This is particularly important because companies usually will be mentioned in its full names. For example, Apple Inc. may be called Apple in the news.   
+•	Delete some companies that uses common words as its name. Specifically, we delete companies with following tickers: INCR, BSTI, QTWO, TIME, NWS, LN, CA, DNOW, TGT, GPI, BOX, USCR. BSTI, for example, is the ticker for Best Inc. After deleting ‘inc’, we are only left with ‘best’, which appears everywhere in the news.  
+•	Delete companies that have market capital below 2 billion dollars. This is also important for high frequency trading. For small companies, buying and selling at big amounts will affect the prices greatly. Therefore, we only trade liquid big companies in order to avoid market impact.  
 
-### 3) Step 3 Strategy Construction
-One of our problems in this project is that we cannot simulate it in real-time because we cannot affort Thompson Reuters' real-time news service and getting real-time bid and ask quote from our brokers. If we cannot get this real-time data, simulating trading using laged news data has no meaning. Therefore, in this step, we seperate our data into training and testing data and back test our strategy.  (to be continued,,,)
+
+
+
 
 ## 6. Project Achievements
 ### 1) Data Cleaning and Text Processing
