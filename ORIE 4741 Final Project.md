@@ -73,7 +73,8 @@ where ri is the abnormal return of stock market caused by headline i. After gett
 Why do we choose regression instead of classification? We have 10 years news data. It is impossible for us to tag them manually as 'positive' or 'negative'. Therefore, we have to tag them with returns. But if we only tag them as positve or negative according to returns, we fail to capture the magnitude of returns. Therefore, we choose to use multivariate regression to capture this magnitude.
 
 ### 5) Identify company names in news
-The importance of trading the correct companies mentioned in the news is evident. And we design an algorithm to identify company names in news.
+The importance of trading the correct companies mentioned in the news is evident. And we design an algorithm to identify company names in news.  
+ 
  1.Data Cleaning:
  For company names data, we downloaded a list of all tradable companies in NYSE, NASDAQ and AMEX. And we did the following data cleaning procedures:
 •	Convert all words into lower case.  
@@ -82,12 +83,46 @@ The importance of trading the correct companies mentioned in the news is evident
 •	Delete some companies that uses common words as its name. Specifically, we delete companies with following tickers: INCR, BSTI, QTWO, TIME, NWS, LN, CA, DNOW, TGT, GPI, BOX, USCR. BSTI, for example, is the ticker for Best Inc. After deleting ‘inc’, we are only left with ‘best’, which appears everywhere in the news.  
 •	Delete companies that have market capital below 2 billion dollars. This is also important for high frequency trading. For small companies, buying and selling at big amounts will affect the prices greatly. Therefore, we only trade liquid big companies in order to avoid market impact.  
 
+2.Algorithm  
+Our algorithm can be easily illustrated using an example. Suppose we want to identify the company in following news: “Morgan Stanley is doing a great job this year.” We test whether each word of the company names is in the news. If we are testing whether this news is talking about Goldman Sachs, we can see neither of “goldman” or “sachs” appears in the news. Therefore, the match score is 0/2 = 0, where 2 is the length of company names. If we are testing whether this news is talking about Morgan Freeman (Let’s just pretend Morgan Freeman can really start a company). Then we can see that “morgan” appears in news but “freeman” does not. So the match score is 0.5. Now let’s test Morgan Stanley, both “morgan” and “stanley” appears in the news so the match scores will be 1. 
+
+Our algorithm only keeps observations with the match score greater than 0.8 in order to make sure that we are trading the right companies. By random sampling from our match result and checking manually, we found that this algorithm gave us an excellent result. The overall accuracy was above 90%. For technical details, please refer to the python program we have uploaded - “Get_company_names_from_news.py”.
+
+### 5) Abnormal Return Computation
+
+(1) Beta Estimation
+The computation of abnormal return is based on the Capital Asset Pricing Model (CAPM), which is the foundation of asset pricing. CAPM states that:
+
+![Formula4](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/Formula1.png)
+
+where Ri is the return of the stock i, Rf is the risk-free rate and Rm is the return of the overall market. In plain language, it states that if you buy 1 share of stock i and sell β shares of market index, your expected payoff will be 0. 
+
+Please note that this is the core of our trading strategy. For example, we want to short 1 share of Apple but afraid of the risk of overall market goes up. We can hedge the trade by longing β shares of market index. Our net expected payoff should be zero according to CAPM model. Therefore, we only care about the relative performance of Apple comparing to the market. If a negative news comes out about Apple, which makes Apple perform worse than the overall market, we are in business.
+
+This is also the reason why we don’t care about the accuracy of our sentiment analysis regression. We are doing a hedge trade here. Even if our prediction is wrong, we will not lose a lot because it is a hedged trade and the expected payoff is 0 (if we do not consider transaction costs). If we know nothing and trade based on the result of a flip of coin, we have a 50% probability of being right. This strategy works like a casino. As long as we have a slightly higher probability of winning, even if our sentiment scores only give us 51% probability of being right, we will win in the long run.
+
+One problem we had was that the coefficients β could change over time. For example, the graph bellow shows the beta of Apple over time. We can see that the β of Apple was around -1.2 on August 2012 but it was around 0.6 on Sep 2014. 
+
+![pic](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/3.png)
+
+Therefore, we used a 24-months rolling regression approach to estimate beta of stocks at different dates. The idea of rolling regression is simple. Suppose we are considering the beta of Apple on 2014.4.7. Then we use the return data from 2012.4.7 to 2014.4.7 to estimate beta on 2014.4.7 for Apple. Now suppose we are considering the beta of Microsoft on 2012.9.8, Then we use the return data from 2010.9.8 to 2012.9.8 to estimate beta on 2012.9.8 for Microsoft. 
+
+Return data were from CRSP and the risk-free data were from Fama French Database. For technical details, please refer to our attached SAS program “Rolling_regression.sas”. 
+
+(2) Stock Return and Abnormal Stock Returns
+After getting beta from rolling regression, we used TAQ database in order to get intraday stock returns data. And we used a special algorithm called Dow Loop in SAS to remotely handle TAQ data efficiently. For intraday index return data, we use CRSP Intraday Total Market Index as our data.
+
+We tested 2 frequencies here: 5-minute frequency and 1-minute frequency. And our abnormal returns are calculated using the following formulas:
+![formula5](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/Formula5.png)
+
+Given the low interest rate after the financial crisis in US, we can ignore the risk-free rate. Therefore, according to CAPM, the abnormal returns should have an expected value of 0. From the data, we can see that this is roughly true. 
+
+![pic4](https://github.com/TSL-123/SentimentDrivenStrategy/blob/master/pic/4.png)
 
 
-
-
-## 6. Project Achievements
-### 1) Data Cleaning and Text Processing
+## 6. Step 2: Simulate Trading
+After getting abnormal returns from section 5.6, we can finally start to run regression to assign sentiment scores based on our model described in section 5.4. 
+### 1) Sparse Matrix Construction
 Our data are news titles from 2007 to 2017, consisting of over 4 million records. So data cleaning and text processing are extremely important. Ideal format of our data are split words, so we can directly match them with directionary or compare them with each other. To cusomize the data, we delete meaningless symbol like "/","(" and fixed match with such symbols like "'s". Aside from meaningless symbol, we have emotionless words in the sentence. Suppose we have too many words like "of", "and" in a sentence. The method described in earlier chapter will be tarnished. By importing nltk package, we  delete common stop words from our data and get a clean dataset ready for analysis.
 
 We also tried to get an overlook on the news data. Our cleaned data shows clear pattern that most news have sentiment factor close to 0. Rest have significant positive or negative sentiment factor.
